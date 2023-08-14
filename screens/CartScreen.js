@@ -4,6 +4,7 @@ import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import BackButton from "../components/BackButton";
 import { decrement, increasement, removeCart } from "../redux/slices/cartSlice";
+import { useNavigation } from "@react-navigation/native";
 export default function CartScreen() {
   const dispatch = useDispatch();
   const cart = useSelector((state) => state.cart);
@@ -15,6 +16,8 @@ export default function CartScreen() {
   const totalPrice = price.reduce((init, item) => {
     return (init = init + item);
   }, 0);
+
+  const navigation = useNavigation();
 
   return (
     <View className="flex-1 bg-white px-4 relative">
@@ -56,13 +59,13 @@ export default function CartScreen() {
                       </TouchableOpacity>
                     </View>
                     <View className="rounded-full h-20 w-20 justify-center items-center border border-yellow-400 overflow-hidden">
-                      <Image
-                        className="w-14 h-14 "
-                        source={require("../assets/images/burger_preview_rev_1.png")}
-                      />
+                      <Image className="w-14 h-14 " source={item.image} />
                     </View>
                     <View className="flex-1 ml-4">
-                      <Text className="text-lg font-bold text-center">
+                      <Text
+                        numberOfLines={2}
+                        className="text-lg font-bold text-center"
+                      >
                         {item.name}
                       </Text>
                       <Text className="font-semibold text-center mt-1">
@@ -113,7 +116,15 @@ export default function CartScreen() {
             <Text className="text-lg font-bold ">{totalPrice}$ </Text>
           </View>
           <View className="mt-3">
-            <TouchableOpacity className="w-full bg-red-600 py-3 rounded-full justify-center items-center">
+            <TouchableOpacity
+              disabled={totalPrice === 0}
+              onPress={() => navigation.navigate("Payment", totalPrice)}
+              style={{
+                backgroundColor:
+                  totalPrice > 0 ? "rgb(220 38 38)" : "rgb(248 113 113)",
+              }}
+              className="w-full py-3 rounded-full justify-center items-center"
+            >
               <Text className="text-lg font-bold text-white">Place Order</Text>
             </TouchableOpacity>
           </View>

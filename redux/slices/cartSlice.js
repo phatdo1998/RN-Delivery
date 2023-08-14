@@ -24,6 +24,9 @@ export const cartSlice = createSlice({
     removeCart: (state, action) => {
       return (state = state.filter((item) => item.id != action.payload));
     },
+    emptyCart: (state) => {
+      return (state = []);
+    },
     increasement: (state, action) => {
       return (state = state.map((item) =>
         item.id === action.payload ? { ...item, qty: item.qty + 1 } : item
@@ -48,6 +51,7 @@ export const cartSlice = createSlice({
 export const {
   addToCart,
   removeCart,
+  emptyCart,
   increasement,
   decrement,
   totalPrice,

@@ -1,4 +1,4 @@
-import React, { Children } from "react";
+import React, { Children, useEffect, useRef } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import HomeScreen from "../screens/HomeScreen";
 import FoodDetail from "../screens/FoodDetail";
@@ -13,40 +13,87 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import UserScreen from "../screens/UserScreen";
 import { AntDesign, Entypo } from "@expo/vector-icons";
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { COLORS } from "../data";
 import CustomDrawer from "../components/CustomDrawer";
 import FavoriteScreen from "../screens/FavoriteScreen";
+import * as Animatable from "react-native-animatable";
+import WelcomeScreen from "../screens/WelcomeScreen";
+import PaymentScreen from "../screens/PaymentScreen";
 
 const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
 const Stack = createNativeStackNavigator();
 
-// const iconName = [
-//   {
-//     name: "home",
-//     component: () => <StackNav />,
-//   },
-//   {
-//     name: "shopping-cart",
-//     component: CartScreen,
-//   },
-//   {
-//     name: "user",
-//     component: UserScreen,
-//   },
-// ];
+const iconName = [
+  {
+    name: "home",
+    component: () => <StackNav />,
+  },
+  {
+    name: "shopping-cart",
+    component: CartScreen,
+  },
+  {
+    name: "heart",
+    component: FavoriteScreen,
+  },
+  {
+    name: "user",
+    component: UserScreen,
+  },
+];
 
-// const ButtonTab = (props) => {
-//   const { item, onPress } = props;
-//   return (
-//     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-//       <TouchableOpacity onPress={onPress}>
-//         <Entypo name={item.name} size={24} color={"blue"} />
-//       </TouchableOpacity>
-//     </View>
-//   );
-// };
+const ButtonTab = (props) => {
+  const viewRef = useRef(null);
+  const { item, onPress, accessibilityState } = props;
+  const focused = accessibilityState.selected;
+
+  useEffect(() => {
+    if (focused) {
+      viewRef.current.animate({
+        0: { scale: 0 },
+        1: { scale: 1 },
+      });
+    } else {
+      viewRef.current.animate({
+        0: { scale: 1 },
+        1: { scale: 1 },
+      });
+    }
+  }, [focused]);
+
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <TouchableOpacity onPress={onPress}>
+        <Animatable.View
+          style={{
+            backgroundColor: focused ? COLORS.accent : COLORS.white,
+            paddingTop: 4,
+            paddingBottom: 4,
+            paddingHorizontal: focused ? 20 : 4,
+            borderRadius: 10,
+          }}
+          animation={"zoomIn"}
+          duration={800}
+          ref={viewRef}
+        >
+          <Entypo
+            name={item.name}
+            size={26}
+            color={focused ? COLORS.accentPink : COLORS.lightGray}
+          />
+        </Animatable.View>
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 export default function Navigation() {
   const { user } = useSelector((state) => state.user);
@@ -85,7 +132,7 @@ export default function Navigation() {
           component={CartScreen}
           options={{
             drawerIcon: ({ color }) => {
-              return <AntDesign name="home" size={24} color={color} />;
+              return <AntDesign name="shoppingcart" size={24} color={color} />;
             },
           }}
         />
@@ -94,7 +141,7 @@ export default function Navigation() {
           component={UserScreen}
           options={{
             drawerIcon: ({ color }) => {
-              return <AntDesign name="home" size={24} color={color} />;
+              return <AntDesign name="user" size={24} color={color} />;
             },
           }}
         />
@@ -103,43 +150,45 @@ export default function Navigation() {
   } else {
     return (
       <Stack.Navigator
-        initialRouteName="Login"
+        initialRouteName="Welcome"
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
+        <Stack.Screen name="Welcome" component={WelcomeScreen} />
       </Stack.Navigator>
     );
   }
 }
 
 const BottomTab = () => {
-  const cart = useSelector((state) => state.cart);
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: {
-          backgroundColor: COLORS.accent,
+          backgroundColor: "white",
           borderTopLeftRadius: 16,
           borderTopRightRadius: 16,
           height: 60,
-          shadowColor: "red",
+          shadowColor: "#000",
           shadowOffset: {
-            width: 1,
+            width: 100,
             height: 0,
           },
-          shadowOpacity: 1,
-          shadowRadius: 16,
+          shadowOpacity: 0.5,
+          shadowRadius: 0,
+          borderTopColor: COLORS.accent,
         },
       }}
     >
-      {/* {iconName.map((item) => {
+      {iconName.map((item) => {
+        const Component = item.component;
         return (
           <Tab.Screen
+            key={item.name}
             name={item.name}
-            component={item.component}
             options={{
               tabBarIcon: ({ focused }) => {
                 return (
@@ -154,10 +203,12 @@ const BottomTab = () => {
                 return <ButtonTab {...props} item={item} />;
               },
             }}
-          />
+          >
+            {() => <Component />}
+          </Tab.Screen>
         );
-      })} */}
-      <Tab.Screen
+      })}
+      {/* <Tab.Screen
         name="Home"
         component={StackNav}
         options={{
@@ -225,7 +276,7 @@ const BottomTab = () => {
             );
           },
         }}
-      />
+      /> */}
     </Tab.Navigator>
   );
 };
@@ -238,6 +289,8 @@ const StackNav = () => {
       <Stack.Screen name="Main" component={HomeScreen} />
       <Stack.Screen name="Detail" component={FoodDetail} />
       <Stack.Screen name="Cart" component={CartScreen} />
+      <Stack.Screen name="Payment" component={PaymentScreen} />
+      <Stack.Screen name="User" component={UserScreen} />
     </Stack.Navigator>
   );
 };

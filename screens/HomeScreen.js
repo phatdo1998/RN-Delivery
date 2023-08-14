@@ -3,12 +3,14 @@ import {
   Entypo,
   FontAwesome5,
   Ionicons,
+  MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
   FlatList,
   Image,
+  Modal,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -19,14 +21,13 @@ import {
 } from "react-native";
 import { COLORS, Categories } from "../data";
 import { useNavigation } from "@react-navigation/native";
-import { signOut } from "firebase/auth";
-import { auth } from "../config/firebase";
 
 export default function HomeScreen() {
   const [selected, setSelected] = useState([0]);
   const navigation = useNavigation();
   const [search, setSearch] = useState(null);
   const [filteredItems, setFilteredItems] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const filterItems = (search) => {
     setTimeout(() => {
@@ -44,8 +45,42 @@ export default function HomeScreen() {
   }, [search]);
 
   return (
-    <SafeAreaView className="flex-1 bg-white px-2">
+    <SafeAreaView className="flex-1 bg-white px-2 relative">
       <StatusBar backgroundColor={"white"} barStyle={"dark-content"} />
+
+      <View className="justify-center items-center">
+        <Modal animationType="fade" transparent={true} visible={modalVisible}>
+          <View
+            style={{ backgroundColor: COLORS.white }}
+            className="w-10/12 h-2/3 absolute top-14 right-2 shadow-lg shadow-black  rounded-lg"
+          >
+            <View className="absolute -right-[5px] -top-[29px] z-10 ">
+              <MaterialIcons name="arrow-drop-up" size={50} color="red" />
+            </View>
+            <View
+              style={{ backgroundColor: "red" }}
+              className="h-14 flex-row justify-between items-center "
+            >
+              <Text className="text-white text-xl font-bold ml-4">
+                Notification
+              </Text>
+              <TouchableOpacity
+                className="mr-1 p-1"
+                onPress={() => setModalVisible(!modalVisible)}
+              >
+                <Ionicons name="close" size={30} color="white" />
+              </TouchableOpacity>
+            </View>
+            <View className="justify-center items-center flex-1">
+              <Image
+                className="w-72 h-72"
+                source={require("../assets/images/no_message_preview_rev_1.png")}
+              />
+            </View>
+          </View>
+        </Modal>
+      </View>
+
       <View className="mt-1 flex-row justify-between items-center">
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
           <Entypo name="menu" size={30} color="black" />
@@ -56,18 +91,11 @@ export default function HomeScreen() {
         >
           Delivery
         </Text>
-        <TouchableOpacity
-          onPress={() =>
-            signOut(auth).then(() => {
-              navigation.replace("Login");
-            })
-          }
-        >
-          <Image
-            className="w-10 h-10"
-            source={{
-              uri: "https://w7.pngwing.com/pngs/178/595/png-transparent-user-profile-computer-icons-login-user-avatars-thumbnail.png",
-            }}
+        <TouchableOpacity onPress={() => setModalVisible(!modalVisible)}>
+          <MaterialCommunityIcons
+            name="bell-badge-outline"
+            size={40}
+            color={COLORS.accentRed}
           />
         </TouchableOpacity>
       </View>
@@ -97,30 +125,34 @@ export default function HomeScreen() {
               renderItem={({ item, index }) => {
                 const isActive = index == selected;
                 return (
-                  <TouchableOpacity
-                    onPress={() => setSelected(index)}
-                    style={{
-                      backgroundColor: isActive ? COLORS.accent : COLORS.white,
-                    }}
-                    className="shadow-md shadow-gray-500 border border-gray-300 w-28 h-44 bg-red-500 ml-4 rounded-3xl justify-between items-center mt-7 py-3"
-                  >
-                    <Image className="w-16 h-16" source={item.image} />
-                    <Text className="font-bold text-base">{item.name}</Text>
-                    <View
+                  <View>
+                    <TouchableOpacity
+                      onPress={() => setSelected(index)}
                       style={{
                         backgroundColor: isActive
-                          ? COLORS.white
-                          : COLORS.accentRed,
+                          ? COLORS.accent
+                          : COLORS.white,
                       }}
-                      className="p-1 bg-red-600 rounded-full justify-center items-center"
+                      className="shadow-md shadow-gray-500 border border-gray-300 w-28 h-44 bg-red-500 ml-4 rounded-3xl justify-between items-center mt-7 py-3"
                     >
-                      <MaterialIcons
-                        name="arrow-right"
-                        size={24}
-                        color={isActive ? "black" : "white"}
-                      />
-                    </View>
-                  </TouchableOpacity>
+                      <Image className="w-16 h-16" source={item.image} />
+                      <Text className="font-bold text-base">{item.name}</Text>
+                      <View
+                        style={{
+                          backgroundColor: isActive
+                            ? COLORS.white
+                            : COLORS.accentRed,
+                        }}
+                        className="p-1 bg-red-600 rounded-full justify-center items-center"
+                      >
+                        <MaterialIcons
+                          name="arrow-right"
+                          size={24}
+                          color={isActive ? "black" : "white"}
+                        />
+                      </View>
+                    </TouchableOpacity>
+                  </View>
                 );
               }}
             />
@@ -142,11 +174,18 @@ export default function HomeScreen() {
                           <FontAwesome5
                             name="crown"
                             size={16}
-                            color={COLORS.accent}
+                            color={
+                              item.isTopOfTheWeek
+                                ? COLORS.accent
+                                : COLORS.lightGray
+                            }
                           />
                           <Text className="mx-1">Top of the week</Text>
                         </View>
-                        <Text className="text-2xl font-bold mx-4 mt-3">
+                        <Text
+                          numberOfLines={1}
+                          className="text-2xl font-bold mx-4 mt-3"
+                        >
                           {item.name}
                         </Text>
                         <Text className="mx-4">{item.weight}</Text>
@@ -170,10 +209,7 @@ export default function HomeScreen() {
                         </View>
                       </View>
                       <View>
-                        <Image
-                          className="w-24 h-24 mr-4"
-                          source={require("../assets/images/burger_preview_rev_1.png")}
-                        />
+                        <Image className="w-24 h-24 mr-4" source={item.image} />
                       </View>
                     </TouchableOpacity>
                   );
@@ -184,7 +220,10 @@ export default function HomeScreen() {
         ) : (
           <>
             <Text className="text-2xl font-bold mt-5">Result</Text>
-            <ScrollView className="mt-5" showsVerticalScrollIndicator={false}>
+            <ScrollView
+              className="mt-5 h-[73%]"
+              showsVerticalScrollIndicator={false}
+            >
               {filteredItems.map((item, index) => {
                 return (
                   <TouchableOpacity
@@ -197,11 +236,18 @@ export default function HomeScreen() {
                         <FontAwesome5
                           name="crown"
                           size={16}
-                          color={COLORS.accent}
+                          color={
+                            item.isTopOfTheWeek == true
+                              ? COLORS.accent
+                              : COLORS.lightGray
+                          }
                         />
                         <Text className="mx-1">Top of the week</Text>
                       </View>
-                      <Text className="text-2xl font-bold mx-4 mt-3">
+                      <Text
+                        numberOfLines={1}
+                        className="text-2xl font-bold mx-4 mt-3"
+                      >
                         {item.name}
                       </Text>
                       <Text className="mx-4">{item.weight}</Text>
@@ -225,10 +271,7 @@ export default function HomeScreen() {
                       </View>
                     </View>
                     <View>
-                      <Image
-                        className="w-24 h-24 mr-4"
-                        source={require("../assets/images/burger_preview_rev_1.png")}
-                      />
+                      <Image className="w-24 h-24 mr-4" source={item.image} />
                     </View>
                   </TouchableOpacity>
                 );

@@ -12,7 +12,7 @@ import { COLORS } from "../data";
 import { useRoute } from "@react-navigation/native";
 import BackButton from "../components/BackButton";
 import { useDispatch } from "react-redux";
-import { addToCart } from "../redux/slices/cartSlice";
+import { addToCart, totalPrice } from "../redux/slices/cartSlice";
 import { addToFavorite, removeFavorite } from "../redux/slices/favoriteSlice";
 
 export default function FoodDetail() {
@@ -28,13 +28,13 @@ export default function FoodDetail() {
         <Modal animationType="fade" transparent={true} visible={modalVisible}>
           <View
             style={{ backgroundColor: COLORS.accent }}
-            className="w-60 h-20 absolute top-80 left-24 justify-center items-center flex-row rounded-lg"
+            className="w-60  h-20 absolute top-80 left-24 justify-center items-center flex-row rounded-lg"
           >
             <AntDesign name="checkcircleo" size={24} color="black" />
             <Text className="text-base font-bold ml-2">
               Add successful products
             </Text>
-            <View className="absolute right-0 top-0 bg-red-600">
+            <View className="absolute rounded-tr-lg right-0 top-0 bg-red-600">
               <TouchableOpacity onPress={() => setModalVisible(!modalVisible)}>
                 <Ionicons name="close" size={24} color="black" />
               </TouchableOpacity>
@@ -96,14 +96,13 @@ export default function FoodDetail() {
           </View>
         </View>
         <View>
-          <Image
-            className="h-52 w-52"
-            source={require("../assets/images/burger_preview_rev_1.png")}
-          />
+          <Image className="h-52 w-52" source={params.image} />
         </View>
       </View>
       <View className="mt-10">
-        <Text className="text-2xl font-bold">Ingredients</Text>
+        {params.ingredients.length > 0 && (
+          <Text className="text-2xl font-bold">Ingredients</Text>
+        )}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -117,10 +116,7 @@ export default function FoodDetail() {
                 horizontal
                 showsHorizontalScrollIndicator={false}
               >
-                <Image
-                  className="w-10 h-10"
-                  source={require("../assets/images/cheese_preview_rev_1.png")}
-                />
+                <Image className="w-10 h-10" source={item} />
               </View>
             );
           })}
