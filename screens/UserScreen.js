@@ -34,9 +34,7 @@ export default function UserScreen() {
   const [phoneNumber, setPhoneNumber] = useState(profile.phoneNumber);
   const [editable, setEditable] = useState(false);
   const [isSave, setIsSave] = useState(true);
-  const [image, setImage] = useState(
-    "https://static.vecteezy.com/system/resources/previews/008/442/086/original/illustration-of-human-icon-user-symbol-icon-modern-design-on-blank-background-free-vector.jpg"
-  );
+  const [image, setImage] = useState("");
 
   const navigation = useNavigation();
   const handleChangeAvt = () => {

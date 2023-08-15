@@ -346,9 +346,7 @@ export default function LoginScreen() {
             >
               <Image
                 className="w-72 h-72"
-                source={{
-                  uri: "https://static.vecteezy.com/system/resources/previews/011/468/905/original/express-fast-delivery-order-scooter-motorcycle-bike-with-box-icon-logo-free-vector.jpg",
-                }}
+                source={require("../assets/images/logo.png")}
               />
             </View>
             <View className="mb-10 justify-center items-center ">
